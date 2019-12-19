@@ -1,0 +1,8 @@
+Three files should exist in this directory for the examples to work.
+
+All samples are assumed to be lowercase.
+
+markov.txt:
+    * One line per name
+    * Empty lines are ignored
+    * Preferred: 100+ samples

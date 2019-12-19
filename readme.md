@@ -1,4 +1,4 @@
-# namegen
+# `namegen`
 
 This is a package for name generation in rust using multiple generators to pick the right tool for each job.
 

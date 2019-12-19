@@ -1,6 +1,10 @@
 use rand::{Rng};
 use super::core::WorkingSet;
+use std::error::Error;
+use std::fmt::{Display, Formatter};
+use crate::core::{Sample, LearnError};
 
+#[derive(Serialize, Deserialize)]
 pub struct Markov {
     tokens: Vec<String>,
     max_tokens: Vec<usize>,
@@ -80,7 +84,7 @@ impl Markov {
         let mut random = rng.gen_range(0, self.total_starts);
 
         self.starts.iter().enumerate().filter(|(_, s)| {
-            if s.weight >= random {
+            if s.weight > random {
                 true
             } else {
                 random -= s.weight;
@@ -89,6 +93,8 @@ impl Markov {
         }).map(|(i, _)| i).next().unwrap_or(0)
     }
 
+    /// Generate a name. You need to provide your own WorkingSet and Rng, which is necessary to save
+    /// on allocations. A dependent application should use the full name generator interface instead
     pub fn generate(&self, ws: &mut WorkingSet, rng: &mut impl Rng) {
         let mut length = 1;
 
@@ -154,9 +160,22 @@ impl Markov {
         }
     }
 
-    pub fn learn(&mut self, sample: &str) -> Result<(), (&'static str)> {
-        let mut remainder = sample;
-        let mut tokens: Vec<usize> = Vec::with_capacity(sample.len());
+    /// Learn rules from the sample. The generation is heavily optimized for speed, but `learn` is
+    /// paying for that speed.
+    pub fn learn(&mut self, sample: &Sample) -> Result<(), impl Error> {
+        let sample_string: &str;
+        if let Sample::Word(s) = sample {
+            sample_string = &s;
+        } else {
+            return Err(LearnError::new(
+                1,
+                format!("Incorrect sample type. Must be Word"),
+                sample.clone(),
+            ));
+        }
+
+        let mut remainder = sample_string;
+        let mut tokens: Vec<usize> = Vec::with_capacity(sample_string.len());
 
         // Find and learn new tokens.
         while remainder.len() > 0 {
@@ -174,7 +193,11 @@ impl Markov {
             tokens.push(token_index);
         }
         if tokens.len() < 3 {
-            return Err("Markov::learn needs a name with three or more tokens.");
+            return Err(LearnError::new(
+                0,
+                format!("3 or more tokens required ({} provided)", tokens.len()),
+                sample.clone(),
+            ));
         }
 
         // Learn token frequencies if that is restricted.
@@ -262,14 +285,25 @@ impl Markov {
         Ok(())
     }
 
-    pub fn new(digraphs: &[&str]) -> Markov {
-        Self::with_constraints(digraphs, false, false, false, false)
+    /// Create a new generator without any pre-defined tokens and constraints.
+    pub fn new() -> Markov {
+        Self::with_constraints(&[], false, false, false, false)
     }
 
-    pub fn with_constraints(digraphs: &[&str], lrs: bool, lrm: bool, lre: bool, rtf: bool) -> Markov {
+    /// Create a new generator with pre-defined tokens and no constraints. The tokens allow you
+    /// to define vowel pairs (e.g. ae, ay, ey), digraphs (e.g. th, nth, ng) so that they're treated
+    /// as one token.
+    pub fn with_tokens(tokens: &[&str]) -> Markov {
+        Self::with_constraints(tokens, false, false, false, false)
+    }
+
+    /// Create a new generator with both pre-defined tokens and constraints. The constraints
+    /// increases the faithfulness of the generator to the sample material, but at the cost of
+    /// variety.
+    pub fn with_constraints(tokens: &[&str], lrs: bool, lrm: bool, lre: bool, rtf: bool) -> Markov {
         Markov{
-            tokens: digraphs.iter().map(|d| String::from(*d)).collect(),
-            max_tokens: vec![0; digraphs.len()],
+            tokens: tokens.iter().map(|d| String::from(*d)).collect(),
+            max_tokens: vec![0; tokens.len()],
             nodes: Vec::with_capacity(64),
             starts: Vec::with_capacity(16),
             total_starts: 0,
@@ -282,6 +316,7 @@ impl Markov {
     }
 }
 
+#[derive(Serialize, Deserialize)]
 struct Node {
     prev: (usize, usize),
     token: usize,
@@ -292,7 +327,7 @@ struct Node {
 }
 
 impl Node {
-    fn list_prev<'a>(list: &'a mut [Node], prev: (usize, usize), length: usize) -> impl Iterator<Item=(usize, &'a mut Node)> {
+    fn list_prev(list: &mut [Node], prev: (usize, usize), length: usize) -> impl Iterator<Item=(usize, &mut Node)> {
         list.iter_mut().enumerate().filter(move |(_, n)| n.length == length && n.prev.1 == prev.0 && n.token == prev.1 && n.ending == false)
     }
 
@@ -305,6 +340,7 @@ impl Node {
     }
 }
 
+#[derive(Serialize, Deserialize)]
 struct StartNode {
     tokens: (usize, usize),
     weight: usize,
