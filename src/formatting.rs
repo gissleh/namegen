@@ -1,7 +1,8 @@
 use crate::core::WorkingSet;
 
-#[derive(Serialize, Deserialize, Eq, PartialEq, Clone, Copy)]
-#[serde(tag = "t", content = "p")]
+#[derive(Eq, PartialEq, Clone, Copy)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", serde(rename_all = "camelCase"))]
 pub enum FormattingRule {
     CapitalizeFirst,
     CapitalizeDefault,

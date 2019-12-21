@@ -6,3 +6,17 @@ markov.txt:
     * One line per name
     * Empty lines are ignored
     * Preferred: 100+ samples
+
+cfgrammar.txt
+    * One line per name
+    * Group headers name token rules
+    * Blank line marks new group
+    * Asterisk means anon token not reused in other result rules
+    * example
+        SV * END
+        e le na
+        i ly na
+
+        SCV * END
+        ma na va
+        re na la

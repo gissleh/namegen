@@ -2,9 +2,11 @@ use rand::{Rng};
 use super::core::WorkingSet;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
-use crate::core::{Sample, LearnError};
+use crate::core::{Sample, LearnError, SampleSet};
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", serde(rename_all = "camelCase"))]
 pub struct Markov {
     tokens: Vec<String>,
     max_tokens: Vec<usize>,
@@ -71,7 +73,7 @@ impl Markov {
         let mut random = rng.gen_range(0, self.total_lengths);
 
         3 + self.lengths.iter().enumerate().filter(|(_, s)| {
-            if **s >= random {
+            if **s > random {
                 true
             } else {
                 random -= **s;
@@ -160,9 +162,28 @@ impl Markov {
         }
     }
 
+    /// Learn learns samples from the sample set. The former state is copied and will
+    /// be restored upon one of the samples failing to import.
+    pub fn learn(&mut self, sample_set: &SampleSet) -> Result<(), LearnError>  {
+        if sample_set.samples().len() == 1 {
+            return self.learn_one(sample_set.samples().first().unwrap());
+        }
+
+        let mut old_state = self.clone();
+
+        for sample in sample_set.samples() {
+            if let Err(err) = self.learn_one(sample) {
+                *self = old_state;
+                return Err(err);
+            }
+        }
+
+        Ok(())
+    }
+
     /// Learn rules from the sample. The generation is heavily optimized for speed, but `learn` is
     /// paying for that speed.
-    pub fn learn(&mut self, sample: &Sample) -> Result<(), impl Error> {
+    pub fn learn_one(&mut self, sample: &Sample) -> Result<(), LearnError> {
         let sample_string: &str;
         if let Sample::Word(s) = sample {
             sample_string = &s;
@@ -170,7 +191,7 @@ impl Markov {
             return Err(LearnError::new(
                 1,
                 format!("Incorrect sample type. Must be Word"),
-                sample.clone(),
+                Some(sample.clone()),
             ));
         }
 
@@ -196,7 +217,7 @@ impl Markov {
             return Err(LearnError::new(
                 0,
                 format!("3 or more tokens required ({} provided)", tokens.len()),
-                sample.clone(),
+                Some(sample.clone()),
             ));
         }
 
@@ -316,13 +337,24 @@ impl Markov {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", serde(rename_all = "camelCase"))]
 struct Node {
+    #[cfg_attr(feature = "serde", serde(rename="p"))]
     prev: (usize, usize),
+    #[cfg_attr(feature = "serde", serde(rename="t"))]
     token: usize,
+    #[cfg_attr(feature = "serde", serde(rename="w"))]
     weight: usize,
+    #[cfg_attr(feature = "serde", serde(rename="l"))]
     length: usize,
+    #[cfg_attr(feature = "serde", serde(default))]
+    #[cfg_attr(feature = "serde", serde(rename="c"))]
+    #[cfg_attr(feature = "serde", serde(skip_serializing_if="Vec::is_empty"))]
     children: Vec<usize>,
+    #[cfg_attr(feature = "serde", serde(rename="e"))]
+    #[cfg_attr(feature = "serde", serde(default))]
     ending: bool,
 }
 
@@ -340,11 +372,17 @@ impl Node {
     }
 }
 
-#[derive(Serialize, Deserialize)]
+#[derive(Clone)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", serde(rename_all = "camelCase"))]
 struct StartNode {
+    #[cfg_attr(feature = "serde", serde(rename="t"))]
     tokens: (usize, usize),
+    #[cfg_attr(feature = "serde", serde(rename="w"))]
     weight: usize,
+    #[cfg_attr(feature = "serde", serde(rename="l"))]
     length: usize,
+    #[cfg_attr(feature = "serde", serde(rename="c"))]
     children: Vec<usize>,
 }
 

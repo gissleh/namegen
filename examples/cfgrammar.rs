@@ -1,56 +1,67 @@
-use time::PreciseTime;
-use rand::{SeedableRng, thread_rng};
-use rand::rngs::SmallRng;
 use std::fs::File;
 use std::io::Read;
+use rand::{SeedableRng, thread_rng};
+use rand::rngs::SmallRng;
+use time::PreciseTime;
 use namegen::{NamePart, FormattingRule, SampleSet, Sample, WorkingSet};
 
 fn main() {
-    let mut part = NamePart::new_markov(
+    let mut part = NamePart::new_cfgrammar(
         // Give the part a unique name.
         "first",
 
         // Formatting rules to apply to the finished name.
         &[
             FormattingRule::CapitalizeFirst,
-            FormattingRule::CapitalizeAfter('\''),
         ],
 
         // These will be treated as if they were one letter by the generator,
         // but not the formatter. This is useful for clusters of consonants or
         // vowels that always appear together and should be generated together
         // as well.
-        &["th", "ae", "ss", "nn"],
+        &["th", "sh", "ts", "tz", "ll", "ae", "ss", "nn"],
 
-        // Length restrict start, middle, end, and token frequency.
+        // Restrict token frequencies and adjacent subtokens/letters.
         // These sacrifice potential variations for faithfulness.
-        true, false, false, true
+        true, false
     );
 
-    // Load samples from file. Providing it is an exercise to the reader.
-    let mut file = File::open("./examples/res/markov.txt").unwrap();
+    // Load sample file.
+    let mut file = File::open("./examples/res/cfgrammar.txt").unwrap();
     let mut data = String::with_capacity(2048);
     file.read_to_string(&mut data).unwrap();
-    for line in data.lines().filter(|l| l.len() > 1) {
-        let mut sample_set = SampleSet::new(&[]);
-        sample_set.add_sample(Sample::Word(line.to_owned()));
 
-        if let Err(e) = part.learn(&sample_set) {
-            eprintln!("{}", e);
+    // Parse sample file.
+    let mut new_set = true;
+    let mut sets: Vec<SampleSet> = Vec::new();
+    for line in data.lines() {
+        if line.len() < 2 {
+            new_set = true;
+            continue;
+        }
+
+        if new_set {
+            let labels: Vec<&str> = line.split(' ').filter(|t| t.len() > 0).collect();
+
+            sets.push(SampleSet::new(&labels));
+            new_set = false;
+        } else {
+            sets.last_mut().unwrap().add_sample(
+                Sample::Tokens(line.split(' ').filter(|t| t.len() > 0).map(|t| t.to_owned()).collect()),
+            );
+        }
+    }
+    for set in sets.iter() {
+        if let Err(e) = part.learn(set) {
+            eprintln!("{:?}: {}", set.labels(), e);
         }
     }
 
-    // A WorkingSet is a bundle of state used throughout the generator. This can be reused between
-    // generator runs. It's there to save on expensive allocations.
+    // Local state bundle (to save allocs) and rng impl to use.
     let mut ws = WorkingSet::new();
-
-    // This isn't cryptography, so you can opt for speed over security.
-    // If you're considering using this as part of a bigger procedural generation system,
-    // this is where you would plug in an Rng trait impl.
     let mut rng = SmallRng::from_rng(thread_rng()).unwrap();
 
     // A little benchmark.
-    // Expect 50% increase in time per name if you have several hundred samples.
     let start = PreciseTime::now();
     for _ in 0..100000 {
         part.generate(&mut ws, &mut rng);
@@ -65,7 +76,7 @@ fn main() {
     assert_eq!(json, serde_json::to_string(&part).unwrap());
 
     // Here's the output.
-    for n in 1..=70 {
+    for n in 1..=77 {
         part.generate(&mut ws, &mut rng);
 
         print!("{result:<width$} ", result = ws.get_result(), width = 10);
