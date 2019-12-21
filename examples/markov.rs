@@ -33,7 +33,7 @@ fn main() {
     file.read_to_string(&mut data).unwrap();
     for line in data.lines().filter(|l| l.len() > 1) {
         let mut sample_set = SampleSet::new(&[]);
-        sample_set.add_sample(Sample::Word(line.to_owned()));
+        sample_set.add_sample(Sample::Word(line.to_owned().to_lowercase()));
 
         if let Err(e) = part.learn(&sample_set) {
             eprintln!("{}", e);
