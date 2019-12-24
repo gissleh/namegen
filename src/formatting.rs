@@ -23,6 +23,7 @@ pub fn format_ws(ws: &mut WorkingSet, rules: &[FormattingRule]) {
 }
 
 /// Format string. This does two allocations.
+#[allow(dead_code)]
 pub fn format_string(s: &str, rules: &[FormattingRule]) -> String {
     let mut chars = s.chars().collect();
     format_vec(&mut chars, rules);

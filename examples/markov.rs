@@ -58,9 +58,16 @@ fn main() {
     let end = PreciseTime::now();
 
     // Show the structure
-    let json =  serde_json::to_string(&part).unwrap();
-    println!("JSON:\n{}", &json);
-    let part: NamePart = serde_json::from_str(&json).unwrap();
+    #[cfg(feature = "serde")]
+    let part: NamePart = {
+        let json =  serde_json::to_string(&part).unwrap();
+        println!("JSON:\n{}", &json);
+
+        let part = serde_json::from_str(&json).unwrap();
+        assert_eq!(json, serde_json::to_string(&part).unwrap());
+
+        part
+    };
 
     assert_eq!(json, serde_json::to_string(&part).unwrap());
 

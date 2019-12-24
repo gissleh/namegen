@@ -9,11 +9,13 @@ pub use crate::markov::Markov;
 pub use crate::core::{WorkingSet, Sample, SampleSet, LearnError};
 pub use crate::formatting::{FormattingRule, format_ws};
 pub use crate::cfgrammar::CFGrammar;
+pub use crate::name::{Name};
 
 mod formatting;
 mod core;
 mod cfgrammar;
 mod markov;
+mod name;
 
 // TODO: Figure out how to make this serializable with a trait instead of this manual stuff.
 

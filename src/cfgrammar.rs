@@ -1,6 +1,5 @@
 use rand::{Rng};
 use super::core::WorkingSet;
-use std::error::Error;
 use crate::core::{LearnError, Sample, SampleSet};
 
 #[derive(Clone)]

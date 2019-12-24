@@ -1,7 +1,5 @@
 use rand::{Rng};
 use super::core::WorkingSet;
-use std::error::Error;
-use std::fmt::{Display, Formatter};
 use crate::core::{Sample, LearnError, SampleSet};
 
 #[derive(Clone)]
@@ -169,7 +167,7 @@ impl Markov {
             return self.learn_one(sample_set.samples().first().unwrap());
         }
 
-        let mut old_state = self.clone();
+        let old_state = self.clone();
 
         for sample in sample_set.samples() {
             if let Err(err) = self.learn_one(sample) {

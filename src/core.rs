@@ -1,7 +1,4 @@
-use serde::export::fmt::{Display};
-use serde::export::Formatter;
 use std::error::Error;
-use rand::seq::index::sample;
 
 /// A WorkingSet is a crucial part of this generator's performance. It is all local state required
 /// to generate a name and get the output without performing additional allocations per generation
@@ -16,6 +13,7 @@ pub struct WorkingSet {
     pub result: Vec<usize>,
     pub result_str: String,
     pub result_chars: Vec<char>,
+    pub result_total: String,
     pub stack: Vec<usize>,
     pub stack_pos: Vec<usize>,
     pub subtokens: Vec<usize>,
@@ -34,6 +32,7 @@ impl WorkingSet {
             result: Vec::with_capacity(16),
             result_str: String::with_capacity(16),
             result_chars: Vec::with_capacity(64),
+            result_total: String::with_capacity(32),
             stack: Vec::with_capacity(128),
             stack_pos: Vec::with_capacity(16),
             subtokens: Vec::new(),
@@ -43,7 +42,7 @@ impl WorkingSet {
 
 #[derive(Clone, std::fmt::Debug)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-#[cfg_attr(feature = "serde", serde(tag = "kind", content = "data"))]
+#[cfg_attr(feature = "serde", serde(rename_all = "camelCase"))]
 pub enum Sample {
     Word(String),
     Tokens(Vec<String>),
@@ -51,6 +50,7 @@ pub enum Sample {
 
 #[derive(Clone, std::fmt::Debug)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", serde(rename_all = "camelCase"))]
 pub struct SampleSet {
     labels: Vec<String>,
     samples: Vec<Sample>,
@@ -79,6 +79,7 @@ impl SampleSet {
 
 #[derive(Debug)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", serde(rename_all = "camelCase"))]
 pub struct LearnError {
     sample: Option<Sample>,
     code: usize,
@@ -91,10 +92,10 @@ impl LearnError {
     }
 }
 
-impl Display for LearnError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+impl std::fmt::Display for LearnError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match &self.sample {
-            Some(sample) => write!(f, "LearError {:?}: {} (code: {})", self.sample, self.desc, self.code),
+            Some(sample) => write!(f, "LearError {:?}: {} (code: {})", sample, self.desc, self.code),
             None => write!(f, "LearError: {} (code: {})", self.desc, self.code),
         }
     }

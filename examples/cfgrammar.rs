@@ -4,6 +4,7 @@ use rand::{SeedableRng, thread_rng};
 use rand::rngs::SmallRng;
 use time::PreciseTime;
 use namegen::{NamePart, FormattingRule, SampleSet, Sample, WorkingSet};
+use std::collections::BTreeSet;
 
 fn main() {
     let mut part = NamePart::new_cfgrammar(
@@ -23,7 +24,7 @@ fn main() {
 
         // Restrict token frequencies and adjacent subtokens/letters.
         // These sacrifice potential variations for faithfulness.
-        true, false
+        true, true
     );
 
     // Load sample file.
@@ -68,12 +69,32 @@ fn main() {
     }
     let end = PreciseTime::now();
 
-    // Show the structure
-    let json =  serde_json::to_string(&part).unwrap();
-    println!("JSON:\n{}", &json);
-    let part: NamePart = serde_json::from_str(&json).unwrap();
+    // Potential test
+    let mut set: BTreeSet<String> = BTreeSet::new();
+    let mut last_added = 0usize;
+    for i in 0..10000000usize {
+        part.generate(&mut ws, &mut rng);
+        if !set.contains(ws.get_result()) {
+            set.insert(ws.get_result().to_owned());
+            last_added = i;
+        } else if i > last_added + 50000 {
+            break;
+        }
+    }
+    println!("Potential: {}", set.len());
 
-    assert_eq!(json, serde_json::to_string(&part).unwrap());
+    // Show the structure
+    #[cfg(feature = "serde")]
+    let part: NamePart = {
+        let json =  serde_json::to_string(&part).unwrap();
+        println!("JSON:\n{}", &json);
+
+        let part = serde_json::from_str(&json).unwrap();
+        assert_eq!(json, serde_json::to_string(&part).unwrap());
+
+        part
+    };
+
 
     // Here's the output.
     for n in 1..=77 {
