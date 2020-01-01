@@ -95,7 +95,6 @@ fn main() {
         part
     };
 
-
     // Here's the output.
     for n in 1..=77 {
         part.generate(&mut ws, &mut rng);

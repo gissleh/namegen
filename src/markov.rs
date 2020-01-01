@@ -96,6 +96,10 @@ impl Markov {
     /// Generate a name. You need to provide your own WorkingSet and Rng, which is necessary to save
     /// on allocations. A dependent application should use the full name generator interface instead
     pub fn generate(&self, ws: &mut WorkingSet, rng: &mut impl Rng) {
+        if self.starts.len() == 0 {
+            return
+        }
+
         let mut length = 1;
 
         ws.stack_pos.clear();

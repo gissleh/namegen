@@ -61,7 +61,7 @@ impl NamePart {
         format_ws(ws, &self.format_rules);
     }
 
-    pub fn learn(&mut self, sample_set: &SampleSet) -> Result<(), impl Error> {
+    pub fn learn(&mut self, sample_set: &SampleSet) -> Result<(), LearnError> {
         self.generator.learn(sample_set)
     }
 

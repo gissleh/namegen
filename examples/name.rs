@@ -71,14 +71,12 @@ fn main() {
         name
     };
 
-    let mut rng = SmallRng::from_rng(thread_rng()).unwrap();
-
     let start = PreciseTime::now();
-    name.generate(&mut rng, "full_name").unwrap().take(100000).for_each(drop);
+    name.generate( "full_name").unwrap().take(100000).for_each(drop);
     let end = PreciseTime::now();
 
-    for (i, result) in name.generate(&mut rng, "full_name").unwrap().enumerate().take(72) {
-        print!("{result:<width$} ", result = result, width = 20);
+    for (i, result) in name.generate( "full_name").unwrap().enumerate().take(72) {
+        print!("{result:<width$} ", result = result, width = 19);
         if i > 0 && (i % 4 == 3) {
             print!("\n")
         }

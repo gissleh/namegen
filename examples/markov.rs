@@ -69,8 +69,6 @@ fn main() {
         part
     };
 
-    assert_eq!(json, serde_json::to_string(&part).unwrap());
-
     // Here's the output.
     for n in 1..=70 {
         part.generate(&mut ws, &mut rng);

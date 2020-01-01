@@ -1,5 +1,8 @@
-use crate::{WorkingSet, NamePart};
+use crate::{WorkingSet, NamePart, LearnError, SampleSet};
+use rand::{SeedableRng, thread_rng};
+use rand::rngs::SmallRng;
 use rand::Rng;
+use rand::prelude::ThreadRng;
 
 #[derive(Clone, std::fmt::Debug)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -27,6 +30,22 @@ pub struct Name {
 impl Name {
     pub fn add_part(&mut self, part: NamePart) {
         self.parts.push(part);
+    }
+
+    pub fn learn(&mut self, part_name: &str, sample_set: &SampleSet) -> Result<(), LearnError> {
+        for part in self.parts.iter_mut() {
+            if &part.name == part_name {
+                return part.learn(sample_set);
+            }
+        }
+
+        Err(
+            LearnError::new(
+                100,
+                format!("Part {} not found", part_name),
+                None
+            )
+        )
     }
 
     pub fn add_format(&mut self, name: &str, str: &str) {
@@ -80,7 +99,29 @@ impl Name {
         })
     }
 
-    pub fn generate<'a, T>(&'a self, rng: &'a mut T, format_name: &str) -> Option<GeneratorIter<'a, T>> where T: Rng {
+    /// Generate names with a fast RNG (SmallRng). This uses `thread_rng()` to
+    /// seed, and may return none.
+    pub fn generate(&self, format_name: &str) -> Option<GeneratorIter<SmallRng>> {
+        if let Ok(mut rng) = SmallRng::from_rng(thread_rng()) {
+            self.generate_with_rng(rng, format_name)
+        } else {
+            None
+        }
+    }
+
+    /// Generate names with a fast RNG (SmallRng) using a seed. This is useful if your rand
+    /// version differs and you want it to be dependent on external reproducable random data
+    /// (e.g. if namegen is part of a bigger procedural generation pipeline).
+    pub fn generate_seeded(&self, seed: u64, format_name: &str) -> Option<GeneratorIter<SmallRng>> {
+        self.generate_with_rng(SmallRng::seed_from_u64(seed), format_name)
+    }
+
+    /// If you for some reason need a secure random generator....
+    pub fn generate_with_thread_rng(&self, format_name: &str) -> Option<GeneratorIter<ThreadRng>> {
+        self.generate_with_rng(thread_rng(), format_name)
+    }
+
+    fn generate_with_rng<T>(&self, rng: T, format_name: &str) -> Option<GeneratorIter<T>> where T: Rng {
         for (i, format) in self.formats.iter().enumerate() {
             if format.name == format_name {
                 return Some(
@@ -130,7 +171,7 @@ impl Name {
 
 pub struct GeneratorIter<'a, T> where T: Rng {
     name: &'a Name,
-    rng: &'a mut T,
+    rng: T,
     format_index: usize,
     ws: WorkingSet,
 }
@@ -140,7 +181,7 @@ impl<'a, T> Iterator for GeneratorIter<'a, T> where T: Rng {
 
     fn next(&mut self) -> Option<Self::Item> {
         self.ws.result_total.clear();
-        self.name.run_generate(&mut self.ws, self.rng, self.format_index);
+        self.name.run_generate(&mut self.ws, &mut self.rng, self.format_index);
 
         Some(self.ws.result_total.clone())
     }

@@ -49,6 +49,7 @@ pub enum Sample {
 }
 
 #[derive(Clone, std::fmt::Debug)]
+#[cfg_attr(target = "wasm32-unknown-unknown", wasm_bindgen)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "camelCase"))]
 pub struct SampleSet {
