@@ -1,6 +1,4 @@
 use namegen::{NamePart, FormattingRule, SampleSet, Sample, Name};
-use rand::{SeedableRng, thread_rng};
-use rand::rngs::SmallRng;
 use std::fs::File;
 use std::io::Read;
 use time::PreciseTime;

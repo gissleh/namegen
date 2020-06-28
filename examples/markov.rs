@@ -4,6 +4,7 @@ use rand::rngs::SmallRng;
 use std::fs::File;
 use std::io::Read;
 use namegen::{NamePart, FormattingRule, SampleSet, Sample, WorkingSet};
+use std::collections::BTreeSet;
 
 fn main() {
     let mut part = NamePart::new_markov(
@@ -80,4 +81,18 @@ fn main() {
     }
 
     println!("Benchmark: {}ns per name", start.to(end).num_nanoseconds().unwrap() / 100000);
+
+    // Potential test
+    let mut set: BTreeSet<String> = BTreeSet::new();
+    let mut last_added = 0usize;
+    for i in 0..100000000usize {
+        part.generate(&mut ws, &mut rng);
+        if !set.contains(ws.get_result()) {
+            set.insert(ws.get_result().to_owned());
+            last_added = i;
+        } else if i > last_added + 500000 {
+            break;
+        }
+    }
+    println!("Potential: {}", set.len());
 }

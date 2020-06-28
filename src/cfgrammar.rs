@@ -1,6 +1,5 @@
 use rand::{Rng};
-use super::core::WorkingSet;
-use crate::core::{LearnError, Sample, SampleSet};
+use crate::{LearnError, WorkingSet, Sample, SampleSet};
 
 #[derive(Clone)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]

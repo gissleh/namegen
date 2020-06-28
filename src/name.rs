@@ -34,7 +34,7 @@ impl Name {
 
     pub fn learn(&mut self, part_name: &str, sample_set: &SampleSet) -> Result<(), LearnError> {
         for part in self.parts.iter_mut() {
-            if &part.name == part_name {
+            if part.name() == part_name {
                 return part.learn(sample_set);
             }
         }
@@ -77,7 +77,7 @@ impl Name {
                 } else {
                     let path_name = token;
                     for (i, part) in self.parts.iter().enumerate() {
-                        if part.name == path_name {
+                        if part.name() == path_name {
                             subparts.push(FormatPart::Part(i));
                         }
                     }
@@ -102,7 +102,7 @@ impl Name {
     /// Generate names with a fast RNG (SmallRng). This uses `thread_rng()` to
     /// seed, and may return none.
     pub fn generate(&self, format_name: &str) -> Option<GeneratorIter<SmallRng>> {
-        if let Ok(mut rng) = SmallRng::from_rng(thread_rng()) {
+        if let Ok(rng) = SmallRng::from_rng(thread_rng()) {
             self.generate_with_rng(rng, format_name)
         } else {
             None
