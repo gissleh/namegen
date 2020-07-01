@@ -3,6 +3,7 @@
 #[cfg_attr(feature = "serde", serde(rename_all = "camelCase"))]
 pub enum Sample {
     Word(String),
+    WordWeighted(String, u32),
     Tokens(Vec<String>),
 }
 

@@ -1,6 +1,6 @@
 use rand::Rng;
 
-use crate::{Markov, CFGrammar, FormattingRule, WorkingSet, SampleSet, LearnError};
+use crate::{Markov, CFGrammar, FormattingRule, WorkingSet, SampleSet, LearnError, WordList};
 use crate::formatting::format_ws;
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -9,6 +9,8 @@ enum PartGenerator {
     Markov(Markov),
     #[cfg_attr(feature = "serde", serde(rename="cfgrammar"))]
     CFGrammar(CFGrammar),
+    #[cfg_attr(feature = "serde", serde(rename="wordlist"))]
+    WordList(WordList),
 }
 
 impl PartGenerator {
@@ -16,6 +18,7 @@ impl PartGenerator {
         match self {
             PartGenerator::Markov(m) => m.generate(ws, rng),
             PartGenerator::CFGrammar(c) => c.generate(ws, rng),
+            PartGenerator::WordList(wl) => wl.generate(ws, rng),
         }
     }
 
@@ -23,6 +26,7 @@ impl PartGenerator {
         match self {
             PartGenerator::Markov(m) => m.learn(sample_set),
             PartGenerator::CFGrammar(c) => c.learn(sample_set),
+            PartGenerator::WordList(wl) => wl.learn(sample_set),
         }
     }
 }
@@ -65,6 +69,16 @@ impl NamePart {
             format_rules: format_rules.to_vec(),
             generator: PartGenerator::CFGrammar(
                 CFGrammar::new(initial_subtokens, rlf, ral),
+            )
+        }
+    }
+
+    pub fn new_wordlist(name: &str, format_rules: &[FormattingRule]) -> NamePart {
+        NamePart {
+            name: name.to_owned(),
+            format_rules: format_rules.to_vec(),
+            generator: PartGenerator::WordList(
+                WordList::new(),
             )
         }
     }

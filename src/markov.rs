@@ -166,12 +166,7 @@ impl Markov {
     /// Learn learns samples from the sample set. The former state is copied and will
     /// be restored upon one of the samples failing to import.
     pub fn learn(&mut self, sample_set: &SampleSet) -> Result<(), LearnError>  {
-        if sample_set.samples().len() == 1 {
-            return self.learn_one(sample_set.samples().first().unwrap());
-        }
-
         let old_state = self.clone();
-
         for sample in sample_set.samples() {
             if let Err(err) = self.learn_one(sample) {
                 *self = old_state;
@@ -186,14 +181,16 @@ impl Markov {
     /// paying for that speed.
     pub fn learn_one(&mut self, sample: &Sample) -> Result<(), LearnError> {
         let sample_string: &str;
-        if let Sample::Word(s) = sample {
-            sample_string = &s;
-        } else {
-            return Err(LearnError::new(
-                1,
-                format!("Incorrect sample type. Must be Word"),
-                Some(sample.clone()),
-            ));
+        match sample {
+            Sample::Word(s) => sample_string = &s,
+            Sample::WordWeighted(s, _) => sample_string = &s,
+            _ => {
+                return Err(LearnError::new(
+                    1,
+                    format!("Incorrect sample type. Must be Word"),
+                    Some(sample.clone()),
+                ));
+            },
         }
 
         let mut remainder = sample_string;

@@ -19,3 +19,6 @@ Generate names using a context-free grammar, with some constraints to keep symbo
 those damn `y`s.
 
 - The depth is fixed, so result rules breaks up into token rules that then gets you the token.
+
+### `wordlist`
+A simple word list generator, for the cases where output should be one of the samples. The samples can be weighted.

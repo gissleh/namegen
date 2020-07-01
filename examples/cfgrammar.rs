@@ -72,7 +72,7 @@ fn main() {
     // Potential test
     let mut set: BTreeSet<String> = BTreeSet::new();
     let mut last_added = 0usize;
-    for i in 0..10000000usize {
+    for i in 0usize.. {
         part.generate(&mut ws, &mut rng);
         if !set.contains(ws.get_result()) {
             set.insert(ws.get_result().to_owned());

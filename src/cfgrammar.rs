@@ -147,6 +147,14 @@ impl CFGrammar {
                         "Word type sample not supported".to_owned(),
                         Some(sample.clone()),
                     ));
+                },
+
+                Sample::WordWeighted(_, _) => {
+                    return Err(LearnError::new(
+                        0,
+                        "Word type sample not supported".to_owned(),
+                        Some(sample.clone()),
+                    ));
                 }
             }
         }
