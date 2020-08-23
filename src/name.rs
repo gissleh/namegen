@@ -52,9 +52,15 @@ impl FormatPart {
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
-struct NameFormat {
+pub struct NameFormat {
     name: String,
     parts: Vec<FormatPart>,
+}
+
+impl NameFormat {
+    pub fn name(&self) -> &str {
+        &self.name
+    }
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -144,6 +150,31 @@ impl Name {
         } else {
             None
         }
+    }
+
+    /// Get the first format name. Will return None if no formats exist.
+    pub fn first_format_name(&self) -> Option<&str> {
+        self.formats.first().map(|f| f.name.as_str())
+    }
+
+    /// Iterate over the parts.
+    pub fn parts(&self) -> impl Iterator<Item=&NamePart> {
+        self.parts.iter()
+    }
+
+    /// Iterate over the formats.
+    pub fn formats(&self) -> impl Iterator<Item=&NameFormat> {
+        self.formats.iter()
+    }
+
+    /// Check if the generator has the requested part name.
+    pub fn has_part_name(&self, name: &str) -> bool {
+        self.parts.iter().find(|p| p.name() == name).is_some()
+    }
+
+    /// Check if the generator has the requested format name.
+    pub fn has_format_name(&self, name: &str) -> bool {
+        self.formats.iter().find(|f| &f.name == name).is_some()
     }
 
     /// Generate names with a fast RNG (SmallRng) using a seed. This is useful if your rand
