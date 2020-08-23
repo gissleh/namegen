@@ -3,6 +3,7 @@ use rand::{SeedableRng, thread_rng};
 use rand::rngs::SmallRng;
 use rand::Rng;
 use rand::prelude::ThreadRng;
+use crate::core::ValidationError;
 
 #[derive(Clone, std::fmt::Debug)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -12,6 +13,42 @@ enum FormatPart {
     Part(usize),
     Format(usize),
     Random(Vec<FormatPart>),
+}
+
+impl FormatPart {
+    fn validate_against(&self, name: &Name) -> Result<(), ValidationError> {
+        match self {
+            FormatPart::Part(index) => {
+                if *index >= name.parts.len() {
+                    Err(
+                        ValidationError::new("ngen::NameFormat", "Name format references invalid part.")
+                    )
+                } else {
+                    Ok(())
+                }
+            },
+            FormatPart::Format(index) => {
+                if *index >= name.formats.len() {
+                    Err(
+                        ValidationError::new("ngen::NameFormat", "Name format references invalid format.")
+                    )
+                } else {
+                    Ok(())
+                }
+            },
+            FormatPart::Random(list) => {
+                for item in list.iter() {
+                    let res = item.validate_against(name);
+                    if res.is_err() {
+                        return res
+                    }
+                }
+
+                Ok(())
+            },
+            FormatPart::Text(_) => Ok(())
+        }
+    }
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -119,6 +156,27 @@ impl Name {
     /// If you for some reason need a secure random generator....
     pub fn generate_with_thread_rng(&self, format_name: &str) -> Option<GeneratorIter<ThreadRng>> {
         self.generate_with_rng(thread_rng(), format_name)
+    }
+
+    pub fn validate(&self) -> Result<(), ValidationError> {
+        let part_error = self.parts.iter()
+            .map(|p| p.validate())
+            .find(|r| r.is_err())
+            .map(|r| r.unwrap_err());
+        if let Some(err) = part_error {
+            return Err(err)
+        }
+
+        for format in self.formats.iter() {
+            for part in format.parts.iter() {
+                let res = part.validate_against(self).map_err(|e| e.with_name(&format.name));
+                if res.is_err() {
+                    return res;
+                }
+            }
+        }
+
+        Ok(())
     }
 
     fn generate_with_rng<T>(&self, rng: T, format_name: &str) -> Option<GeneratorIter<T>> where T: Rng {

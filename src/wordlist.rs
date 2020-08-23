@@ -1,5 +1,6 @@
 use rand::{Rng};
 use crate::{LearnError, WorkingSet, Sample, SampleSet};
+use crate::core::ValidationError;
 
 /// WList is a simple word-list generator. It's probably not what you came here for, but some name
 /// parts are best filled with a word-list. It supports weighted words, so that you can make common
@@ -136,7 +137,7 @@ impl WordList {
         }
     }
 
-    pub fn validate(&mut self) {
+    pub fn fix_validation_issues(&mut self) {
         let rules_copy = self.rules.clone();
 
         self.rules.clear();
@@ -145,6 +146,34 @@ impl WordList {
         self.total_weight = 0;
 
         rules_copy.into_iter().for_each(|r| self.add_rule(r));
+    }
+
+    pub fn validate(&self) -> Result<(), ValidationError> {
+        let mut total_weight = 0u32;
+        let mut cutoff_point = self.rules.len();
+
+        for (i, rule) in self.rules.iter().enumerate() {
+            if rule.weight == 1 && cutoff_point > i {
+                cutoff_point = i;
+                if total_weight != self.one_cutoff_weight {
+                    return Err(ValidationError::new("parts::WordList", "incorrect one_cutoff_weight"))
+                }
+            }
+            if rule.weight > 1 && cutoff_point < i {
+                return Err(ValidationError::new("parts::WordList", "weight > 1 found after cutoff."))
+            }
+            if rule.weight == 0 {
+                return Err(ValidationError::new("parts::WordList", "rule.weight is 0."))
+            }
+
+            total_weight += rule.weight;
+        }
+
+        if total_weight != self.total_weight {
+            return Err(ValidationError::new("parts::WordList", "incorrect total_weight."))
+        }
+
+        Ok(())
     }
 
     pub fn new() -> WordList {

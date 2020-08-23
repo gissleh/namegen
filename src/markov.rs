@@ -1,5 +1,6 @@
 use rand::{Rng};
 use crate::{Sample, SampleSet, WorkingSet, LearnError};
+use crate::core::ValidationError;
 
 #[derive(Clone)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -234,7 +235,7 @@ impl Markov {
         let start_tokens = (tokens[0], tokens[1]);
         let start_length = if self.lrs { tokens.len() } else { 0 };
         let start_index;
-        if let Some((i, start)) = self.starts.iter_mut().enumerate().filter(|(_, s)| s.tokens == start_tokens && s.length == start_length).next() {
+        if let Some((i, start)) = self.starts.iter_mut().enumerate().find(|(_, s)| s.tokens == start_tokens && s.length == start_length) {
             start_index = i;
             start.weight += 1;
         } else {
@@ -299,6 +300,66 @@ impl Markov {
         for i in affected.iter() {
             let child_weight: usize = self.nodes[*i].children.iter().map(|c| self.nodes[*c].weight).sum();
             self.nodes[*i].weight = if self.nodes[*i].ending { 1 } else { child_weight };
+        }
+
+        Ok(())
+    }
+
+    pub fn validate(&self) -> Result<(), ValidationError> {
+        let total_length: usize = self.lengths.iter().sum();
+        if total_length != self.total_lengths {
+            return Err(ValidationError::new("parts::Markov", "total_lengths is not accurate."))
+        }
+
+        let total_starts: usize = self.starts.iter().map(|s| s.weight).sum();
+        if total_starts != self.total_starts {
+            return Err(ValidationError::new("parts::Markov", "total_starts is not accurate."))
+        }
+
+        for start in self.starts.iter() {
+            if start.length == 0 && !self.lrs {
+                return Err(ValidationError::new("parts::Markov", "start.length cannot be zero if lrs is true."))
+            }
+
+            for ch_i in start.children.iter() {
+                if *ch_i >= self.nodes.len() {
+                    return Err(ValidationError::new("parts::Markov", "start has out of range child."))
+                }
+            }
+
+            let (st1, st2) = start.tokens;
+            if st1 >= self.tokens.len() || st2 >= self.tokens.len() {
+                return Err(ValidationError::new("parts::Markov", "start has out of range token."))
+            }
+        }
+
+        for node in self.nodes.iter() {
+            if node.length == 0 && (if node.ending {self.lre} else {self.lrm}) == true {
+                return Err(ValidationError::new("parts::Markov", "start.length cannot be zero if lrm/lre is true."))
+            }
+
+            for ch_i in node.children.iter() {
+                if *ch_i >= self.nodes.len() {
+                    return Err(ValidationError::new("parts::Markov", "start has out of range child."))
+                }
+            }
+
+            if node.token >= self.tokens.len() {
+                return Err(ValidationError::new("parts::Markov", "node has out of range token."))
+            }
+
+            if node.weight == 0 {
+                return Err(ValidationError::new("parts::Markov", "node has zero weight."))
+            }
+
+            if node.ending && node.children.len() > 0 {
+                return Err(ValidationError::new("parts::Markov", "ending node cannot have children."))
+            }
+
+            let (pt1, st2) = node.prev;
+            if pt1 >= self.nodes.len() || st2 >= self.nodes.len() {
+                return Err(ValidationError::new("parts::Markov", "node has out of range prev."))
+            }
         }
 
         Ok(())

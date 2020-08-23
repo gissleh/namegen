@@ -69,6 +69,12 @@ fn main() {
         name
     };
 
+    // Validate it.
+    if let Err(e) = name.validate() {
+        eprintln!("Validation failed: {}", e);
+        return
+    }
+
     let start = PreciseTime::now();
     name.generate( "full_name").unwrap().take(100000).for_each(drop);
     let end = PreciseTime::now();

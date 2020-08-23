@@ -1,5 +1,6 @@
 use rand::{Rng};
 use crate::{LearnError, WorkingSet, Sample, SampleSet};
+use crate::core::ValidationError;
 
 #[derive(Clone)]
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -292,6 +293,43 @@ impl CFGrammar {
         });
 
         self.result_rules.len() - 1
+    }
+
+    pub fn validate(&self) -> Result<(), ValidationError> {
+        for rule in self.result_rules.iter() {
+            for tr_i in rule.token_rules.iter() {
+                if *tr_i >= self.token_rules.len() {
+                    return Err(ValidationError::new("parts::CFGrammar", "result_rule references invalid token"));
+                }
+            }
+        }
+
+        let total_weight: u32 = self.result_rules.iter().map(|r| r.weight).sum();
+        if total_weight != self.total_result_weight {
+            return Err(ValidationError::new("parts::CFGrammar", "total_weight does not match."));
+        }
+
+        for rule in self.token_rules.iter() {
+            for rt_i in rule.tokens.iter() {
+                if *rt_i >= self.tokens.len() {
+                    return Err(ValidationError::new("parts::CFGrammar", "total_weight does not match."));
+                }
+            }
+        }
+
+        for token in self.tokens.iter() {
+            for st in token.subtokens().iter() {
+                if *st > self.subtokens.len() {
+                    return Err(ValidationError::new("parts::CFGrammar", "token references invalid subtoken"));
+                }
+            }
+        }
+
+        if self.subtoken_frequencies.len() != self.subtokens.len() {
+            return Err(ValidationError::new("parts::CFGrammar", "subtoken frequencies does not match subtokens."));
+        }
+
+        Ok(())
     }
 
     pub fn new(initial_subtokens: &[&str], rlf: bool, ral: bool) -> CFGrammar {

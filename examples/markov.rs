@@ -41,6 +41,24 @@ fn main() {
         }
     }
 
+    // Show the structure
+    #[cfg(feature = "serde")]
+        let part: NamePart = {
+        let json =  serde_json::to_string(&part).unwrap();
+        println!("JSON:\n{}", &json);
+
+        let part = serde_json::from_str(&json).unwrap();
+        assert_eq!(json, serde_json::to_string(&part).unwrap());
+
+        part
+    };
+
+    // Validate it.
+    if let Err(e) = part.validate() {
+        eprintln!("Validation failed: {}", e);
+        return
+    }
+
     // A WorkingSet is a bundle of state used throughout the generator. This can be reused between
     // generator runs. It's there to save on expensive allocations.
     let mut ws = WorkingSet::new();
@@ -57,18 +75,6 @@ fn main() {
         part.generate(&mut ws, &mut rng);
     }
     let end = PreciseTime::now();
-
-    // Show the structure
-    #[cfg(feature = "serde")]
-    let part: NamePart = {
-        let json =  serde_json::to_string(&part).unwrap();
-        println!("JSON:\n{}", &json);
-
-        let part = serde_json::from_str(&json).unwrap();
-        assert_eq!(json, serde_json::to_string(&part).unwrap());
-
-        part
-    };
 
     // Here's the output.
     for n in 1..=70 {

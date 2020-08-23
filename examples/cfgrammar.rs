@@ -58,6 +58,24 @@ fn main() {
         }
     }
 
+    // Show the structure
+    #[cfg(feature = "serde")]
+        let part: NamePart = {
+        let json =  serde_json::to_string(&part).unwrap();
+        println!("JSON:\n{}", &json);
+
+        let part = serde_json::from_str(&json).unwrap();
+        assert_eq!(json, serde_json::to_string(&part).unwrap());
+
+        part
+    };
+
+    // Validate it.
+    if let Err(e) = part.validate() {
+        eprintln!("Validation failed: {}", e);
+        return
+    }
+
     // Local state bundle (to save allocs) and rng impl to use.
     let mut ws = WorkingSet::new();
     let mut rng = SmallRng::from_rng(thread_rng()).unwrap();
@@ -82,18 +100,6 @@ fn main() {
         }
     }
     println!("Potential: {}", set.len());
-
-    // Show the structure
-    #[cfg(feature = "serde")]
-    let part: NamePart = {
-        let json =  serde_json::to_string(&part).unwrap();
-        println!("JSON:\n{}", &json);
-
-        let part = serde_json::from_str(&json).unwrap();
-        assert_eq!(json, serde_json::to_string(&part).unwrap());
-
-        part
-    };
 
     // Here's the output.
     for n in 1..=77 {

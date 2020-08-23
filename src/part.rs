@@ -2,6 +2,7 @@ use rand::Rng;
 
 use crate::{Markov, CFGrammar, FormattingRule, WorkingSet, SampleSet, LearnError, WordList};
 use crate::formatting::format_ws;
+use crate::core::ValidationError;
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 enum PartGenerator {
@@ -29,6 +30,14 @@ impl PartGenerator {
             PartGenerator::WordList(wl) => wl.learn(sample_set),
         }
     }
+
+    fn validate(&self) -> Result<(), ValidationError> {
+        match self {
+            PartGenerator::Markov(m) => m.validate(),
+            PartGenerator::CFGrammar(c) => c.validate(),
+            PartGenerator::WordList(wl) => wl.validate(),
+        }
+    }
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
@@ -51,6 +60,10 @@ impl NamePart {
 
     pub fn learn(&mut self, sample_set: &SampleSet) -> Result<(), LearnError> {
         self.generator.learn(sample_set)
+    }
+
+    pub fn validate(&self) -> Result<(), ValidationError> {
+        self.generator.validate().map_err(|err| err.with_name(&self.name))
     }
 
     pub fn new_markov(name: &str, format_rules: &[FormattingRule], initial_tokens: &[&str], lrs: bool, lrm: bool, lre: bool, rlf: bool) -> NamePart {

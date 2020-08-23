@@ -67,11 +67,50 @@ impl std::fmt::Display for LearnError {
 }
 
 impl Error for LearnError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        None
+    }
+
     fn description(&self) -> &str {
         &self.desc
     }
+}
 
+#[derive(Debug)]
+#[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[cfg_attr(feature = "serde", serde(rename_all = "camelCase"))]
+pub struct ValidationError {
+    kind: &'static str,
+    name: String,
+    message: &'static str,
+}
+
+impl ValidationError {
+    pub fn with_name(&self, name: &str) -> ValidationError {
+        ValidationError{
+            kind: self.kind,
+            message: self.message,
+            name: name.to_owned(),
+        }
+    }
+
+    pub fn new(kind: &'static str, message: &'static str) -> ValidationError {
+        ValidationError{kind, message, name: String::new()}
+    }
+}
+
+impl std::fmt::Display for ValidationError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}({}): {}", self.kind, self.name, self.message)
+    }
+}
+
+impl Error for ValidationError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
         None
+    }
+
+    fn description(&self) -> &str {
+        &self.message
     }
 }
