@@ -8,7 +8,7 @@ pub use crate::formatting::{FormattingRule, format_string};
 pub use crate::cfgrammar::CFGrammar;
 pub use crate::markov::Markov;
 pub use crate::wordlist::WordList;
-pub use crate::name::{Name};
+pub use crate::name::{Name, NameFormat};
 pub use crate::part::{NamePart};
 
 mod formatting;

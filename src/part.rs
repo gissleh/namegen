@@ -5,6 +5,7 @@ use crate::formatting::format_ws;
 use crate::core::ValidationError;
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Clone)]
 enum PartGenerator {
     #[cfg_attr(feature = "serde", serde(rename="markov"))]
     Markov(Markov),
@@ -42,6 +43,7 @@ impl PartGenerator {
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "camelCase"))]
+#[derive(Clone)]
 pub struct NamePart {
     name: String,
     generator: PartGenerator,

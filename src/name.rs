@@ -52,6 +52,7 @@ impl FormatPart {
 }
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
+#[derive(Clone)]
 pub struct NameFormat {
     name: String,
     parts: Vec<FormatPart>,
@@ -65,6 +66,7 @@ impl NameFormat {
 
 #[cfg_attr(feature = "serde", derive(Serialize, Deserialize))]
 #[cfg_attr(feature = "serde", serde(rename_all = "camelCase"))]
+#[derive(Clone)]
 pub struct Name {
     parts: Vec<NamePart>,
     formats: Vec<NameFormat>,
@@ -106,8 +108,7 @@ impl Name {
 
             subparts.clear();
 
-            let tokens: Vec<&str> = bs.split("|").collect();
-            for token in tokens {
+            for token in bs.split("|") {
                 if token.starts_with('=') {
                     subparts.push(FormatPart::Text(token[1..].to_owned()))
                 } else if token.starts_with(':') {
@@ -131,6 +132,8 @@ impl Name {
                 parts.push(FormatPart::Random(subparts.clone()));
             } else if subparts.len() == 1 {
                 parts.push(subparts[0].clone())
+            } else {
+                parts.push(FormatPart::Text(format!("{{{}}}", bs)))
             }
 
             pos += end + 1;
