@@ -1,0 +1,81 @@
+S1 * E1
+li ha na
+mi ra la
+ma na va
+sa lo ra
+ne ly na
+sa ma ra
+se ry na
+ka la ra
+se la ya
+
+S1 * E2
+ca ree na
+po lga ra
+sa phy ria
+ny xe ris
+na ssa na
+se lya na
+
+S2 * E2
+sha 'i ra
+
+S1 * E3
+va 'y  nna
+
+S1 * E2
+be ne zia
+li da nya
+
+S1 E1
+ra na
+ri la
+da ra
+ta na
+te la
+na ri
+
+S3 E1
+pho ra
+ba tha
+lia ra
+shia la
+
+S1 E3
+to lae
+li selle
+ma llene
+da hlia
+de leia
+fa lere
+ya nis
+ta shya
+we shra
+je thra
+la nteia
+mo rinth
+he rmia
+ti lia
+wa sea
+ga llae
+
+S2 E3
+tre llani
+
+SV * E1
+ae thy ta
+a lee na
+e lno ra
+e nya la
+
+SV * E3
+e re ba
+y se li
+a na ya
+
+SV * E2
+e ri nya
+i ri ssa
+a le stia
+
+

@@ -1,0 +1,12 @@
+[package]
+name = "namegen-service"
+version = "0.1.0"
+authors = ["Gisle Aune <dev@gisle.me>"]
+edition = "2018"
+
+[dependencies]
+rocket = "0.4.5"
+rocket_contrib = "0.4.5"
+serde = "^1.0.0"
+serde_json = "^1.0.0"
+namegen = {path = "../namegen", features = ["serde"]}

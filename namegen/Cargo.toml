@@ -1,0 +1,16 @@
+[package]
+name = "namegen"
+version = "0.1.0"
+authors = ["Gissleh"]
+edition = "2018"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+rand = { version = "0.7.3", features = ["small_rng"] }
+serde = { version = "^1.0.0", optional = true, features = ["derive"] }
+
+[dev-dependencies]
+time = "0.1.40"
+serde_json = "1.0.44"

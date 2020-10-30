@@ -383,12 +383,12 @@ impl Markov {
     pub fn with_constraints(tokens: &[&str], lrs: bool, lrm: bool, lre: bool, rtf: bool) -> Markov {
         Markov{
             tokens: tokens.iter().map(|d| String::from(*d)).collect(),
-            max_tokens: vec![0; tokens.len()],
+            max_tokens: vec![0usize; tokens.len()],
             nodes: Vec::with_capacity(64),
             starts: Vec::with_capacity(16),
             total_starts: 0,
 
-            lengths: vec![0; 8],
+            lengths: vec![0usize; 8],
             total_lengths: 0,
 
             lrs, lrm, lre, rtf,
