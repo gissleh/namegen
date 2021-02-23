@@ -310,7 +310,7 @@ impl Markov {
             }
 
             if i > 2 {
-                for (i, node) in Node::list_prev(&mut self.nodes, prev, length_m) {
+                for (_, node) in Node::list_prev(&mut self.nodes, prev, length_m) {
                     if !node.children.contains(&current_index) {
                         node.children.push(current_index);
                     }
@@ -395,13 +395,10 @@ impl Markov {
                 return Err(ValidationError::new("parts::Markov", "start.length cannot be zero if lrm/lre is true."))
             }
 
-            let mut children_weight = 0;
             for ch_i in node.children.iter() {
                 if *ch_i >= self.nodes.len() {
                     return Err(ValidationError::new("parts::Markov", "start has out of range child."))
                 }
-
-                children_weight += self.nodes[*ch_i].weight;
             }
 
             if node.token >= self.tokens.len() {
@@ -520,13 +517,13 @@ struct StartNode {
 }
 
 /// This is only used for serialize
-#[allow(clippy::trivially_copy_pass_by_ref)]
+#[allow(clippy::trivially_copy_pass_by_ref, dead_code)]
 fn is_false(v: &bool) -> bool {
     !*v
 }
 
 /// This is only used for serialize
-#[allow(clippy::trivially_copy_pass_by_ref)]
+#[allow(clippy::trivially_copy_pass_by_ref, dead_code)]
 fn is_zero(v: &usize) -> bool {
     *v == 0
 }
