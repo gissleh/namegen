@@ -1,11 +1,18 @@
 {
   "name": "namegen-wasm",
-  "version": "0.1.0",
-  "description": "namegen wasm",
+  "version": "0.0.0",
+  "description": "",
   "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+  "devDependencies": {
+    "rollup": "^2.38.4"
   },
+  "scripts": {
+    "build": "rollup -c",
+    "dev": "rollup -c -w --host"
+  },
+  "keywords": [
+    "namegen"
+  ],
   "author": "Gisle",
   "license": "ISC"
 }
