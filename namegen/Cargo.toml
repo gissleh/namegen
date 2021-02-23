@@ -3,6 +3,9 @@ name = "namegen"
 version = "0.1.0"
 authors = ["Gissleh"]
 edition = "2018"
+description = "Fast name generator."
+license = "ISC"
+license-file = "LICENSE.md"
 
 [lib]
 crate-type = ["cdylib", "rlib"]
