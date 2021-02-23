@@ -18,6 +18,7 @@ pub struct WorkingSet {
     pub result_total: String,
     pub stack: Vec<usize>,
     pub stack_pos: Vec<usize>,
+    pub stack_weight: Vec<usize>,
     pub subtokens: Vec<usize>,
 }
 
@@ -37,6 +38,7 @@ impl WorkingSet {
             result_total: String::with_capacity(32),
             stack: Vec::with_capacity(128),
             stack_pos: Vec::with_capacity(16),
+            stack_weight: Vec::with_capacity(16),
             subtokens: Vec::new(),
         }
     }

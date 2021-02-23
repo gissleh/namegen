@@ -332,10 +332,10 @@ impl CFGrammar {
         Ok(())
     }
 
-    pub fn new(initial_subtokens: &[&str], rlf: bool, ral: bool) -> CFGrammar {
+    pub fn new<S: AsRef<str>>(initial_subtokens: &[S], rlf: bool, ral: bool) -> CFGrammar {
         CFGrammar{
             tokens: Vec::new(),
-            subtokens: initial_subtokens.iter().map(|s| (*s).to_owned()).collect(),
+            subtokens: initial_subtokens.iter().map(|s| s.as_ref().to_owned()).collect(),
             result_rules: Vec::new(),
             token_rules: Vec::new(),
             total_result_weight: 0,

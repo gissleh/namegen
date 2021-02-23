@@ -11,7 +11,7 @@ cfgrammar.txt
     * One line per name
     * Group headers name token rules
     * Blank line marks new group
-    * Asterisk means anon token not reused in other result rules
+    * Asterisk means anonymous token not reused in other rules.
     * example
         SV * END
         e le na

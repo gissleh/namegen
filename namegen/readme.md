@@ -5,6 +5,24 @@ use case for this is a website, but I've left this general enough to even fit in
 
 ## Features
 - `serde` support with feature flag `serde`
+- `wasm_bindgen` supported. The github repo has a project for building it.
+
+## Formats
+The name formats has a special syntax. They're what describes how to build a full name from the parts. The tokens are
+in curly braces, and they mean the following.
+
+* `{first_name}`: Generate part with name `first_name`.
+* `{=stuff}`: Returns the word "stuff".
+* `{first_name|=Unnamed}`: A `|` indicates a random pick between the items. Here it will either generate the `first_name`
+  part or just the word Unnamed.
+* `{:full_name}`: The `:` prefix denotes a format. It can only refer to formats that were added before it, both due to
+  optimization and to avoid an infinite recursion.
+
+Here are a few examples.
+
+* `{first_name} {last_name}`: The referred name parts with a space between.
+* `{first}'{clan} {=vas|=nar} {ship}`: The third `{...}` is either one of these two.
+* `{:full_name|:first_name}, the {title}`: The first `{...}` chooses between these two formats.
 
 ## Generators
 

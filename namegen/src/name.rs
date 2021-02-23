@@ -132,7 +132,7 @@ impl Name {
                 parts.push(FormatPart::Random(subparts.clone()));
             } else if subparts.len() == 1 {
                 parts.push(subparts[0].clone())
-            } else {
+            } else if start != end {
                 parts.push(FormatPart::Text(format!("{{{}}}", bs)))
             }
 
@@ -233,7 +233,7 @@ impl Name {
 
     fn run_generate(&self, ws: &mut WorkingSet, rng: &mut impl Rng, format_index: usize) {
         for mut fp in self.formats[format_index].parts.iter() {
-            if let FormatPart::Random(list) = fp {
+            while let FormatPart::Random(list) = fp {
                 fp = &list[rng.gen_range(0, list.len())];
             }
 

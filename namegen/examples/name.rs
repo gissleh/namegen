@@ -4,8 +4,8 @@ use std::io::Read;
 use time::PreciseTime;
 
 fn main() {
-    let mut part1 = NamePart::new_cfgrammar("first", &[FormattingRule::CapitalizeFirst], &[], true, true);
-    let mut part2 = NamePart::new_cfgrammar("last", &[FormattingRule::CapitalizeFirst, FormattingRule::CapitalizeAfter('\'')], &[], true, true);
+    let mut part1 = NamePart::new_cfgrammar("first", &[FormattingRule::CapitalizeFirst], &["th", "sh"], true, true);
+    let mut part2 = NamePart::new_cfgrammar("last", &[FormattingRule::CapitalizeFirst, FormattingRule::CapitalizeAfter('\'')], &["th", "sh"], true, true);
 
     // Load sample file.
     let mut file = File::open("./examples/res/name.txt").unwrap();

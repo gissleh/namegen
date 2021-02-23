@@ -68,7 +68,7 @@ impl NamePart {
         self.generator.validate().map_err(|err| err.with_name(&self.name))
     }
 
-    pub fn new_markov(name: &str, format_rules: &[FormattingRule], initial_tokens: &[&str], lrs: bool, lrm: bool, lre: bool, rlf: bool) -> NamePart {
+    pub fn new_markov<S: AsRef<str>>(name: &str, format_rules: &[FormattingRule], initial_tokens: &[S], lrs: bool, lrm: bool, lre: bool, rlf: bool) -> NamePart {
         NamePart {
             name: name.to_owned(),
             format_rules: format_rules.to_vec(),
@@ -78,7 +78,7 @@ impl NamePart {
         }
     }
 
-    pub fn new_cfgrammar(name: &str, format_rules: &[FormattingRule], initial_subtokens: &[&str], rlf: bool, ral: bool) -> NamePart {
+    pub fn new_cfgrammar<S: AsRef<str>>(name: &str, format_rules: &[FormattingRule], initial_subtokens: &[S], rlf: bool, ral: bool) -> NamePart {
         NamePart {
             name: name.to_owned(),
             format_rules: format_rules.to_vec(),

@@ -25,7 +25,7 @@ fn main() {
 
         // Length restrict start, middle, end, and token frequency.
         // These sacrifice potential variations for faithfulness.
-        true, false, false, true
+        false, false, true, true
     );
 
     // Load samples from file. Providing it is an exercise to the reader.
@@ -96,9 +96,9 @@ fn main() {
         if !set.contains(ws.get_result()) {
             set.insert(ws.get_result().to_owned());
             last_added = i;
-        } else if i > last_added + 500000 {
+        } else if i > last_added + 50000 {
             break;
         }
     }
-    println!("Potential: {}", set.len());
+    println!("Potential: {} (not exact)", set.len());
 }

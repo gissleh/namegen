@@ -11,6 +11,9 @@ crate-type = ["cdylib", "rlib"]
 rand = { version = "0.7.3", features = ["small_rng"] }
 serde = { version = "^1.0.0", optional = true, features = ["derive"] }
 
+[target.'cfg(all(target_arch = "wasm32", target_os = "unknown"))'.dependencies]
+rand = { version = "0.7.3", features = ["small_rng", "wasm-bindgen"] }
+
 [dev-dependencies]
 time = "0.1.40"
 serde_json = "1.0.44"
