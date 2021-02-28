@@ -29,10 +29,17 @@ impl SampleSet {
         self.samples.push(sample);
     }
 
-    pub fn new(labels: &[&str]) -> SampleSet {
+    pub fn new() -> SampleSet {
         SampleSet{
             samples: Vec::new(),
-            labels: labels.iter().map(|s| (*s).to_owned()).collect(),
+            labels: Vec::new(),
+        }
+    }
+
+    pub fn with_labels<S: AsRef<str>>(labels: &[S]) -> SampleSet {
+        SampleSet{
+            samples: Vec::new(),
+            labels: labels.iter().map(|s| s.as_ref().to_owned()).collect(),
         }
     }
 }

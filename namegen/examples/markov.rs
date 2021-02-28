@@ -33,7 +33,7 @@ fn main() {
     let mut data = String::with_capacity(2048);
     file.read_to_string(&mut data).unwrap();
     for line in data.lines().filter(|l| l.len() > 1) {
-        let mut sample_set = SampleSet::new(&[]);
+        let mut sample_set = SampleSet::new();
         sample_set.add_sample(Sample::Word(line.to_owned().to_lowercase()));
 
         if let Err(e) = part.learn(&sample_set) {
@@ -43,7 +43,7 @@ fn main() {
 
     // Show the structure
     #[cfg(feature = "serde")]
-        let part: NamePart = {
+    let part: NamePart = {
         let json =  serde_json::to_string(&part).unwrap();
         println!("JSON:\n{}", &json);
 

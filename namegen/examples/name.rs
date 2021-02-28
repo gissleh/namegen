@@ -30,7 +30,7 @@ fn main() {
         if new_set {
             let labels: Vec<&str> = line.split(' ').filter(|t| t.len() > 0).collect();
 
-            sets.push(SampleSet::new(&labels));
+            sets.push(SampleSet::with_labels(&labels));
             new_set = false;
         } else {
             sets.last_mut().unwrap().add_sample(
