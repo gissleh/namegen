@@ -38,21 +38,6 @@ pub fn format_vec(v: &mut Vec<char>, rules: &[FormattingRule]) {
         return;
     }
 
-    // Pre-capitalization rules
-    for rule in rules.iter() {
-        match *rule {
-            FormattingRule::ReplaceChar {from, to} => {
-                for i in 0..v.len() {
-                    if v[i] == from {
-                        v[i] = to;
-                    }
-                }
-            }
-
-            _ => {}
-        }
-    }
-
     // Capitalization rules
     let mut capitalized_first = false;
     for rule in rules.iter() {
@@ -88,6 +73,14 @@ pub fn format_vec(v: &mut Vec<char>, rules: &[FormattingRule]) {
     // Last rules
     for rule in rules.iter() {
         match *rule {
+            FormattingRule::ReplaceChar {from, to} => {
+                for i in 0..v.len() {
+                    if v[i] == from {
+                        v[i] = to;
+                    }
+                }
+            }
+
             FormattingRule::RemoveChar (ch) => {
                 let mut i = 0;
                 while i < v.len() {
@@ -137,6 +130,7 @@ mod tests {
     #[test]
     fn test_multiple_capitalization() {
         assert_eq!(
+            // Mass Effect asari use case
             format_string("t'soni", &[
                 FormattingRule::CapitalizeFirst,
                 FormattingRule::CapitalizeAfter('\''),
@@ -154,6 +148,17 @@ mod tests {
             ]),
 
             "DuBois"
+        );
+
+        assert_eq!(
+            // Mass Effect salarian use case
+            format_string("jan_mayr", &[
+                FormattingRule::CapitalizeFirst,
+                FormattingRule::CapitalizeAfter('_'),
+                FormattingRule::ReplaceChar{from: '_', to: ' '},
+            ]),
+
+            "Jan Mayr"
         );
     }
 }

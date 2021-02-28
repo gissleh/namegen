@@ -74,8 +74,9 @@ impl CFGrammar {
                 }
 
                 // Check constraint: restrict subtoken frequency.
+                let mut failed = false;
+
                 if self.rlf {
-                    let mut failed = false;
                     for (i, subtoken_index) in ws.subtokens.iter().enumerate() {
                         let mut count = 1;
                         for j in (i+1)..ws.subtokens.len() {
@@ -89,17 +90,17 @@ impl CFGrammar {
                             break;
                         }
                     }
+                }
 
-                    if failed {
-                        ws.result.pop();
-                    } else {
-                        ws.result_str.clear();
-                        for subtoken_index in ws.subtokens.iter() {
-                            ws.result_str.push_str(self.subtokens[*subtoken_index].as_str());
-                        }
-
-                        return;
+                if failed {
+                    ws.result.pop();
+                } else {
+                    ws.result_str.clear();
+                    for subtoken_index in ws.subtokens.iter() {
+                        ws.result_str.push_str(self.subtokens[*subtoken_index].as_str());
                     }
+
+                    return;
                 }
             } else {
                 let token_rule_index = self.result_rules[result_index].token_rules[ws.result.len()];
