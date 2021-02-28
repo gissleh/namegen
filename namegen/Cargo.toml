@@ -1,11 +1,10 @@
 [package]
 name = "namegen"
-version = "0.1.1"
+version = "0.1.2"
 authors = ["Gissleh"]
 edition = "2018"
 description = "Fast name generator."
 readme = "README.md"
-license = "ISC"
 license-file = "LICENSE.md"
 
 [lib]
