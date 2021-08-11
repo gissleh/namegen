@@ -75,6 +75,9 @@ fn main() {
         return
     }
 
+    println!("part 'first': {}", name.generate_part("first").unwrap().next().unwrap());
+    println!("part 'last': {}", name.generate_part("last").unwrap().next().unwrap());
+
     let start = PreciseTime::now();
     name.generate( "full_name").unwrap().take(100000).for_each(drop);
     let end = PreciseTime::now();

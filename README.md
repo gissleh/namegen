@@ -7,6 +7,8 @@ use case for this is a website, but I've left this general enough to even fit in
 - `serde` support with feature flag `serde`
 - `wasm_bindgen` supported. The github repo has a project for building it.
 
+## Example
+
 ## Formats
 The name formats has a special syntax. They're what describes how to build a full name from the parts. The tokens are
 in curly braces, and they mean the following.

@@ -149,7 +149,17 @@ impl Name {
     /// seed, and may return none.
     pub fn generate(&self, format_name: &str) -> Option<GeneratorIter<SmallRng>> {
         if let Ok(rng) = SmallRng::from_rng(thread_rng()) {
-            self.generate_with_rng(rng, format_name)
+            self.generate_with_rng(rng, false, format_name)
+        } else {
+            None
+        }
+    }
+
+    /// Same as generate, but selecing a single part instead of using a format. You could
+    /// always use NamePart directly, but then you wouldn't get the same iterator syntax.
+    pub fn generate_part(&self, part_name: &str) -> Option<GeneratorIter<SmallRng>> {
+        if let Ok(rng) = SmallRng::from_rng(thread_rng()) {
+            self.generate_with_rng(rng, true, part_name)
         } else {
             None
         }
@@ -184,12 +194,22 @@ impl Name {
     /// version differs and you want it to be dependent on external reproducable random data
     /// (e.g. if namegen is part of a bigger procedural generation pipeline).
     pub fn generate_seeded(&self, seed: u64, format_name: &str) -> Option<GeneratorIter<SmallRng>> {
-        self.generate_with_rng(SmallRng::seed_from_u64(seed), format_name)
+        self.generate_with_rng(SmallRng::seed_from_u64(seed), false, format_name)
+    }
+
+    /// Generate a name part with a fast RNG (SmallRng) using a seed.
+    pub fn generate_part_seeded(&self, seed: u64, part_name: &str) -> Option<GeneratorIter<SmallRng>> {
+        self.generate_with_rng(SmallRng::seed_from_u64(seed), true, part_name)
     }
 
     /// If you for some reason need a secure random generator....
     pub fn generate_with_thread_rng(&self, format_name: &str) -> Option<GeneratorIter<ThreadRng>> {
-        self.generate_with_rng(thread_rng(), format_name)
+        self.generate_with_rng(thread_rng(), false, format_name)
+    }
+
+    /// If you for some reason need a secure random generator....
+    pub fn generat_parte_with_thread_rng(&self, part_name: &str) -> Option<GeneratorIter<ThreadRng>> {
+        self.generate_with_rng(thread_rng(), true, part_name)
     }
 
     pub fn validate(&self) -> Result<(), ValidationError> {
@@ -213,18 +233,36 @@ impl Name {
         Ok(())
     }
 
-    fn generate_with_rng<T>(&self, rng: T, format_name: &str) -> Option<GeneratorIter<T>> where T: Rng {
-        for (i, format) in self.formats.iter().enumerate() {
-            if format.name == format_name {
-                return Some(
-                    GeneratorIter {
-                        name: self,
-                        format_index: i,
-                        ws: WorkingSet::new(),
+    fn generate_with_rng<T>(&self, rng: T, is_part: bool, name: &str) -> Option<GeneratorIter<T>> where T: Rng {
+        if is_part {
+            for (i, part) in self.parts.iter().enumerate() {
+                if part.name() == name {
+                    return Some(
+                        GeneratorIter {
+                            name: self,
+                            is_part: true,
+                            index: i,
+                            ws: WorkingSet::new(),
 
-                        rng,
-                    }
-                );
+                            rng,
+                        }
+                    );
+                }
+            }
+        } else {
+            for (i, format) in self.formats.iter().enumerate() {
+                if format.name == name {
+                    return Some(
+                        GeneratorIter {
+                            name: self,
+                            is_part: false,
+                            index: i,
+                            ws: WorkingSet::new(),
+
+                            rng,
+                        }
+                    );
+                }
             }
         }
 
@@ -253,6 +291,11 @@ impl Name {
         }
     }
 
+    fn run_generate_part(&self, ws: &mut WorkingSet, rng: &mut impl Rng, part_index: usize) {
+        self.parts[part_index].generate(ws, rng);
+        ws.result_total.push_str(&ws.result_str);
+    }
+
     pub fn new() -> Name {
         Name{
             parts: Vec::new(),
@@ -264,7 +307,8 @@ impl Name {
 pub struct GeneratorIter<'a, T> where T: Rng {
     name: &'a Name,
     rng: T,
-    format_index: usize,
+    is_part: bool,
+    index: usize,
     ws: WorkingSet,
 }
 
@@ -273,7 +317,11 @@ impl<'a, T> Iterator for GeneratorIter<'a, T> where T: Rng {
 
     fn next(&mut self) -> Option<Self::Item> {
         self.ws.result_total.clear();
-        self.name.run_generate(&mut self.ws, &mut self.rng, self.format_index);
+        if self.is_part {
+            self.name.run_generate_part(&mut self.ws, &mut self.rng, self.index);
+        } else {
+            self.name.run_generate(&mut self.ws, &mut self.rng, self.index);
+        }
 
         Some(self.ws.result_total.clone())
     }
