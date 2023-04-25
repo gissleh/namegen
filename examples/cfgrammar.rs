@@ -20,7 +20,9 @@ fn main() {
         // but not the formatter. This is useful for clusters of consonants or
         // vowels that always appear together and should be generated together
         // as well.
-        &["th", "sh", "ts", "tz", "ll", "ae", "ss", "nn"],
+        &[
+            "th", "sh", "ts", "tz", "ll", "ae", "ss", "nn", "ng", "rr", "ll", "ts", "tsy"
+        ],
 
         // Restrict token frequencies and adjacent subtokens/letters.
         // These sacrifice potential variations for faithfulness.
@@ -48,7 +50,7 @@ fn main() {
             new_set = false;
         } else {
             sets.last_mut().unwrap().add_sample(
-                Sample::Tokens(line.split(' ').filter(|t| t.len() > 0).map(|t| t.to_owned()).collect()),
+                Sample::Tokens(line.split(' ').filter(|t| t.len() > 0).map(|t| t.to_owned().to_lowercase()).collect()),
             );
         }
     }
@@ -80,6 +82,16 @@ fn main() {
     let mut ws = WorkingSet::new();
     let mut rng = SmallRng::from_rng(thread_rng()).unwrap();
 
+    // Here's the output.
+    for n in 1..=77 {
+        part.generate(&mut ws, &mut rng);
+
+        print!("{result:<width$} ", result = ws.get_result(), width = 10);
+        if n % 7 == 0 {
+            print!("\n")
+        }
+    }
+
     // A little benchmark.
     let start = PreciseTime::now();
     for _ in 0..100000 {
@@ -101,15 +113,6 @@ fn main() {
     }
     println!("Potential: {}", set.len());
 
-    // Here's the output.
-    for n in 1..=77 {
-        part.generate(&mut ws, &mut rng);
-
-        print!("{result:<width$} ", result = ws.get_result(), width = 10);
-        if n % 7 == 0 {
-            print!("\n")
-        }
-    }
 
     println!("Benchmark: {}ns per name", start.to(end).num_nanoseconds().unwrap() / 100000);
 }

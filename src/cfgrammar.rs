@@ -243,7 +243,7 @@ impl CFGrammar {
             let (subtoken_index, subtoken_len) = self.ensure_subtokens(&token_str[subtoken_pos..]);
 
             subtokens.push(subtoken_index);
-            subtoken_pos += subtoken_len;
+            subtoken_pos += token_str[subtoken_pos..].chars().take(subtoken_len).map(|c| c.len_utf8()).sum::<usize>();
         }
 
         for (i, Token(subtokens2)) in self.tokens.iter().enumerate() {
